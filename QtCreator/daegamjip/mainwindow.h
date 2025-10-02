@@ -6,11 +6,10 @@
 #include <QTranslator>
 #include <QLabel>
 #include <QList>
-#include <QCamera> // Added for camera control
-#include <QMediaCaptureSession> // Added for camera control
-#include <QVideoWidget> // Added for camera display
-#include <QMediaDevices>
-#include <QPushButton> // Added for temporary buttons
+#include <QCamera>
+#include <QCameraInfo>
+#include <QVideoWidget>
+#include <QPushButton>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -57,13 +56,13 @@ private:
     QList<QLabel*> m_repwIndicators;
 
     QCamera *m_camera;
-    QMediaCaptureSession *m_captureSession;
     QVideoWidget *m_videoWidget;
 
     QTimer *m_sequenceTimer;
     MainWindow::CameraSequenceState m_sequenceState;
     int m_stateCountdown;
     QTimer *m_finishPageTimer;
+    int m_previousStackIndex;
 
 private slots:
     void on_startButton_clicked();
@@ -87,5 +86,8 @@ private slots:
     void goToStartPage();
     void startCamera();
     void stopCamera();
+
+private:
+    void resetCameraPage();
 };
 #endif // MAINWINDOW_H

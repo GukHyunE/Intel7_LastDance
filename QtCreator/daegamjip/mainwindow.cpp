@@ -15,10 +15,12 @@
 #include <algorithm> // For std::sort
 #include <QTimer> // Added for QTimer functionality
 #include <QDebug>
+#include <QCameraInfo>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_previousStackIndex(0)
 {
     ui->setupUi(this);
 
@@ -102,11 +104,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pwokLabel->clear();
 
     // --- Signal & Slot Connections ---
-    connect(ui->countryCB, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::on_countryCB_currentIndexChanged);
+    connect(ui->countryCB, SIGNAL(currentIndexChanged(int)), this, SLOT(on_countryCB_currentIndexChanged(int)));
     connect(ui->pwLE, &QLineEdit::textChanged, this, &MainWindow::handlePasswordChanged);
     connect(ui->repwLE, &QLineEdit::textChanged, this, &MainWindow::handlePasswordChanged);
     connect(ui->nameLE, &QLineEdit::textChanged, this, &MainWindow::checkFormCompleteness);
-    connect(ui->countryCB, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::checkFormCompleteness);
+    connect(ui->countryCB, SIGNAL(currentIndexChanged(int)), this, SLOT(checkFormCompleteness()));
     connect(ui->numberLE, &QLineEdit::textChanged, this, &MainWindow::checkFormCompleteness);
     connect(ui->pwLE, &QLineEdit::textChanged, this, &MainWindow::checkFormCompleteness);
     connect(ui->repwLE, &QLineEdit::textChanged, this, &MainWindow::checkFormCompleteness);
@@ -121,21 +123,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     try {
         // --- Camera Setup ---
-        const QList<QCameraDevice> devices = QMediaDevices::videoInputs();
+        const QList<QCameraInfo> devices = QCameraInfo::availableCameras();
         if (devices.isEmpty()) {
             qDebug() << "No cameras found!";
             m_camera = nullptr;
-            m_captureSession = nullptr; // Initialize to nullptr if no camera
             m_videoWidget = nullptr;    // Initialize to nullptr if no camera
         } else {
             m_camera = new QCamera(devices.first(), this);
-            connect(m_camera, &QCamera::errorOccurred, this, &MainWindow::onCameraError);
+            connect(m_camera, SIGNAL(error(QCamera::Error)), this, SLOT(onCameraError(QCamera::Error)));
 
-            m_captureSession = new QMediaCaptureSession(this);
             m_videoWidget = new QVideoWidget(this);
-
-            m_captureSession->setCamera(m_camera);
-            m_captureSession->setVideoOutput(m_videoWidget);
+            m_camera->setViewfinder(m_videoWidget);
 
             // Programmatically create the layout for cameraPage
             QVBoxLayout *cameraPageLayout = new QVBoxLayout(ui->cameraPage);
@@ -149,7 +147,6 @@ MainWindow::MainWindow(QWidget *parent)
     } catch (...) {
         qDebug() << "An unknown error occurred during camera initialization. Disabling camera.";
         m_camera = nullptr;
-        m_captureSession = nullptr;
         m_videoWidget = nullptr;
     }
 
@@ -305,6 +302,12 @@ void MainWindow::on_tempNextButton_clicked()
 void MainWindow::onStackPageChanged(int index)
 {
     qDebug() << "onStackPageChanged: index =" << index;
+
+    // If we are leaving the camera page, reset it
+    if (m_previousStackIndex == ui->stack->indexOf(ui->cameraPage)) {
+        resetCameraPage();
+    }
+
     m_languageButtonWidget->setVisible(index == 0);
     if (index == ui->stack->indexOf(ui->finishPage)) { // Check if the current page is the finish page
         qDebug() << "Starting finish page timer.";
@@ -317,7 +320,10 @@ void MainWindow::onStackPageChanged(int index)
             m_finishPageTimer->stop();
         }
     }
+
+    m_previousStackIndex = index; // Update the previous index
 }
+
 
 // --- Form Logic Slots ---
 void MainWindow::on_countryCB_currentIndexChanged(int index)
@@ -468,7 +474,7 @@ void MainWindow::startCamera()
 {
     if (m_camera) {
         m_camera->start();
-        qDebug() << "Camera status:" << m_camera->isActive();
+        qDebug() << "Camera status:" << (m_camera->status() == QCamera::ActiveStatus);
     }
 }
 
@@ -477,4 +483,23 @@ void MainWindow::stopCamera()
     if (m_camera) {
         m_camera->stop();
     }
+}
+
+void MainWindow::resetCameraPage()
+{
+    qDebug() << "Resetting camera page...";
+    // Stop the camera and timers
+    stopCamera();
+    m_sequenceTimer->stop();
+
+    // Reset state variables
+    m_sequenceState = Idle;
+    m_stateCountdown = 0;
+
+    // Reset UI elements
+    if (m_videoWidget) {
+        m_videoWidget->hide();
+    }
+    ui->pushButton->setVisible(true);
+    ui->cameraLabel->setText(tr("버튼을 누르면 촬영이 시작됩니다.")); // Reset label text
 }
