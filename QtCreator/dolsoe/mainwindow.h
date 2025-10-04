@@ -29,10 +29,15 @@ private slots:
     void on_tempPB_clicked();
     void on_endCB_clicked();
     void onPasswordEntered(const QString &password);
+    void on_langKrPB_clicked();
+    void on_langEnPB_clicked();
 
 private:
+    void updateTexts();
     Ui::MainWindow *ui;
     NumPad *m_numpad;
     NumpadReason m_numpadReason;
+    QString m_currentLanguage;
+    bool m_isStopped;
 };
 #endif // MAINWINDOW_H

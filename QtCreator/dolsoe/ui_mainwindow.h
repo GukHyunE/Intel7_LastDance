@@ -37,6 +37,8 @@ public:
     QPushButton *tempPB;
     QPushButton *endCB;
     QLabel *statusLabel;
+    QPushButton *langKrPB;
+    QPushButton *langEnPB;
     QWidget *gohomePage;
     QLabel *label_2;
     QLabel *label_3;
@@ -87,6 +89,12 @@ public:
         statusLabel = new QLabel(workingPage);
         statusLabel->setObjectName(QString::fromUtf8("statusLabel"));
         statusLabel->setGeometry(QRect(40, 460, 351, 25));
+        langKrPB = new QPushButton(workingPage);
+        langKrPB->setObjectName(QString::fromUtf8("langKrPB"));
+        langKrPB->setGeometry(QRect(410, 10, 89, 25));
+        langEnPB = new QPushButton(workingPage);
+        langEnPB->setObjectName(QString::fromUtf8("langEnPB"));
+        langEnPB->setGeometry(QRect(510, 10, 89, 25));
         stackedWidget->addWidget(workingPage);
         gohomePage = new QWidget();
         gohomePage->setObjectName(QString::fromUtf8("gohomePage"));
@@ -118,10 +126,12 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", nullptr));
         label->setText(QApplication::translate("MainWindow", "\353\260\224\355\224\204\354\260\215\353\212\224\353\217\214\354\207\240", nullptr));
-        carryPB->setText(QApplication::translate("MainWindow", "\354\247\220\353\202\230\353\245\264\352\270\260", nullptr));
-        tempPB->setText(QApplication::translate("MainWindow", "\354\235\274\354\213\234 \354\240\225\354\247\200", nullptr));
-        endCB->setText(QApplication::translate("MainWindow", "\354\242\205\353\243\214", nullptr));
+        carryPB->setText(QApplication::translate("MainWindow", "\353\224\260\353\235\274\354\230\244\353\204\210\353\235\274", nullptr));
+        tempPB->setText(QApplication::translate("MainWindow", "\354\240\225\354\247\200\355\225\230\352\261\260\353\235\274", nullptr));
+        endCB->setText(QApplication::translate("MainWindow", "\354\242\205\353\243\214\355\225\230\352\261\260\353\235\274", nullptr));
         statusLabel->setText(QString());
+        langKrPB->setText(QApplication::translate("MainWindow", "\355\225\234\352\265\255\354\226\264", nullptr));
+        langEnPB->setText(QApplication::translate("MainWindow", "English", nullptr));
         label_2->setText(QApplication::translate("MainWindow", "\353\217\214\354\207\240 \354\247\221\352\260\200\353\212\224 \354\202\254\354\247\204", nullptr));
         label_3->setText(QApplication::translate("MainWindow", "\353\217\214\354\207\240 \355\207\264\352\267\274\355\225\264\354\234\240~~", nullptr));
     } // retranslateUi
